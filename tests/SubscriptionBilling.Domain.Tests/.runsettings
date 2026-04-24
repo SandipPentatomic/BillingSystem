@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="Code Coverage" uri="datacollector://Microsoft/CodeCoverage/2.0" assemblyQualifiedName="Coverlet.Collector.DataCollection.CoverageCollector, Coverlet.Collector">
+        <Configuration>
+          <Exclude>
+            <!-- Exclude Program.cs and configuration files from code coverage -->
+            <ExcludeByFile>**/Program.cs</ExcludeByFile>
+            <ExcludeByFile>**/GlobalUsings.cs</ExcludeByFile>
+            <ExcludeByFile>**/DependencyInjection.cs</ExcludeByFile>
+          </Exclude>
+          <ExcludeByAttribute>
+            <ExcludeByAttribute>CompilerGenerated</ExcludeByAttribute>
+            <ExcludeByAttribute>GeneratedCode</ExcludeByAttribute>
+          </ExcludeByAttribute>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
