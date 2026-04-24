@@ -1,4 +1,4 @@
-﻿namespace SubscriptionBilling.Application.Abstractions.CQRS;
+namespace SubscriptionBilling.Application.Abstractions.CQRS;
 
 public interface IQueryHandler<in TQuery, TResponse>
     where TQuery : IQuery<TResponse>

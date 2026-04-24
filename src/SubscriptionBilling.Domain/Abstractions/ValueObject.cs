@@ -1,4 +1,4 @@
-﻿namespace SubscriptionBilling.Domain.Abstractions;
+namespace SubscriptionBilling.Domain.Abstractions;
 
 public abstract class ValueObject : IEquatable<ValueObject>
 {

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using SubscriptionBilling.Application.Abstractions.CQRS;
 using SubscriptionBilling.Infrastructure.Services;
 using SubscriptionBilling.Infrastructure.Tests.Support;

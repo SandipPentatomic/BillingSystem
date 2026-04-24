@@ -1,4 +1,4 @@
-﻿using SubscriptionBilling.Domain.Enums;
+using SubscriptionBilling.Domain.Enums;
 
 namespace SubscriptionBilling.Application.Features.Subscriptions;
 

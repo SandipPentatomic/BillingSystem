@@ -1,4 +1,4 @@
-﻿using SubscriptionBilling.Application.Features.Customers;
+using SubscriptionBilling.Application.Features.Customers;
 using SubscriptionBilling.Application.Tests.Support;
 
 namespace SubscriptionBilling.Application.Tests.Features.Customers;

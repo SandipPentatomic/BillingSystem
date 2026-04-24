@@ -1,4 +1,4 @@
-﻿using SubscriptionBilling.Application.Features.Billing;
+using SubscriptionBilling.Application.Features.Billing;
 using SubscriptionBilling.Application.Tests.Support;
 using SubscriptionBilling.Domain.Aggregates;
 using SubscriptionBilling.Domain.Enums;

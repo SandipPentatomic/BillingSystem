@@ -1,4 +1,4 @@
-﻿using SubscriptionBilling.Domain.Aggregates;
+using SubscriptionBilling.Domain.Aggregates;
 using SubscriptionBilling.Infrastructure.Persistence.Repositories;
 using SubscriptionBilling.Infrastructure.Tests.Support;
 

@@ -1,4 +1,4 @@
-﻿namespace SubscriptionBilling.Application.Abstractions.Persistence;
+namespace SubscriptionBilling.Application.Abstractions.Persistence;
 
 public interface IUnitOfWork
 {

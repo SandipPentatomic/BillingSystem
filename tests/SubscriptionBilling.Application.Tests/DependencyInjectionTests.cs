@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using SubscriptionBilling.Application;
 using SubscriptionBilling.Application.Abstractions.Clock;
 using SubscriptionBilling.Application.Abstractions.CQRS;

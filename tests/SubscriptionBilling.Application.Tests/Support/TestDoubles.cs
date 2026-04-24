@@ -1,4 +1,4 @@
-﻿using SubscriptionBilling.Application.Abstractions.Clock;
+using SubscriptionBilling.Application.Abstractions.Clock;
 using SubscriptionBilling.Application.Abstractions.Persistence;
 using SubscriptionBilling.Application.Features.Invoices;
 using SubscriptionBilling.Domain.Aggregates;

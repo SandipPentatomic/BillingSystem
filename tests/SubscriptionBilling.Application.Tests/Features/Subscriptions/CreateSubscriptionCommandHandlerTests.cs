@@ -1,4 +1,4 @@
-﻿using SubscriptionBilling.Application.Exceptions;
+using SubscriptionBilling.Application.Exceptions;
 using SubscriptionBilling.Application.Features.Subscriptions;
 using SubscriptionBilling.Application.Tests.Support;
 using SubscriptionBilling.Domain.Aggregates;

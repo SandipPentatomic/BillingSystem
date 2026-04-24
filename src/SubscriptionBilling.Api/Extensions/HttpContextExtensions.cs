@@ -1,4 +1,4 @@
-﻿namespace SubscriptionBilling.Api.Extensions;
+namespace SubscriptionBilling.Api.Extensions;
 
 public static class HttpContextExtensions
 {

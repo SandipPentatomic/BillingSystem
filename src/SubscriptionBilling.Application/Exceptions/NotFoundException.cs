@@ -1,4 +1,4 @@
-﻿namespace SubscriptionBilling.Application.Exceptions;
+namespace SubscriptionBilling.Application.Exceptions;
 
 public sealed class NotFoundException : Exception
 {

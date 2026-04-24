@@ -1,4 +1,4 @@
-﻿using SubscriptionBilling.Domain.Aggregates;
+using SubscriptionBilling.Domain.Aggregates;
 using SubscriptionBilling.Domain.Enums;
 using SubscriptionBilling.Domain.Events;
 using SubscriptionBilling.Domain.ValueObjects;

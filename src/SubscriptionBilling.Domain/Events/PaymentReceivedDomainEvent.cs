@@ -1,4 +1,4 @@
-﻿using SubscriptionBilling.Domain.Abstractions;
+using SubscriptionBilling.Domain.Abstractions;
 using SubscriptionBilling.Domain.Enums;
 
 namespace SubscriptionBilling.Domain.Events;

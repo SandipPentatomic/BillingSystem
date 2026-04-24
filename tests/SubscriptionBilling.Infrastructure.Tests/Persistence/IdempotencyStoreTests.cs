@@ -1,4 +1,4 @@
-﻿using SubscriptionBilling.Infrastructure.Persistence;
+using SubscriptionBilling.Infrastructure.Persistence;
 using SubscriptionBilling.Infrastructure.Tests.Support;
 
 namespace SubscriptionBilling.Infrastructure.Tests.Persistence;

@@ -1,4 +1,4 @@
-﻿using SubscriptionBilling.Domain.Aggregates;
+using SubscriptionBilling.Domain.Aggregates;
 
 namespace SubscriptionBilling.Application.Abstractions.Persistence;
 

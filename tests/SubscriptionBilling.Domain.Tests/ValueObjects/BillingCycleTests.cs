@@ -1,4 +1,4 @@
-﻿using SubscriptionBilling.Domain.Abstractions;
+using SubscriptionBilling.Domain.Abstractions;
 using SubscriptionBilling.Domain.Enums;
 using SubscriptionBilling.Domain.ValueObjects;
 using System.Reflection;

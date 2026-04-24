@@ -1,4 +1,4 @@
-﻿using SubscriptionBilling.Application.Features.Invoices;
+using SubscriptionBilling.Application.Features.Invoices;
 
 namespace SubscriptionBilling.Application.Abstractions.Persistence;
 

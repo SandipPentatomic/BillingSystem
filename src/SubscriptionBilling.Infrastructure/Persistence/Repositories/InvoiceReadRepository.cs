@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SubscriptionBilling.Application.Abstractions.Persistence;
 using SubscriptionBilling.Application.Features.Invoices;
 using SubscriptionBilling.Domain.Enums;

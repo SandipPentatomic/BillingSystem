@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using SubscriptionBilling.Api.Controllers;
 using SubscriptionBilling.Api.Tests.Support;
 using SubscriptionBilling.Application.Features.Billing;

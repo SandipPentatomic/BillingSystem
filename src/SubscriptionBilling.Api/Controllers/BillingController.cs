@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SubscriptionBilling.Application.Abstractions.CQRS;
 using SubscriptionBilling.Application.Features.Billing;

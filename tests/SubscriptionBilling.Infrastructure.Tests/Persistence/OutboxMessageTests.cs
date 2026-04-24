@@ -1,4 +1,4 @@
-﻿using SubscriptionBilling.Domain.Events;
+using SubscriptionBilling.Domain.Events;
 using SubscriptionBilling.Infrastructure.Persistence;
 
 namespace SubscriptionBilling.Infrastructure.Tests.Persistence;

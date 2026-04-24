@@ -1,4 +1,4 @@
-﻿namespace SubscriptionBilling.Application.Abstractions.CQRS;
+namespace SubscriptionBilling.Application.Abstractions.CQRS;
 
 public interface IQueryDispatcher
 {

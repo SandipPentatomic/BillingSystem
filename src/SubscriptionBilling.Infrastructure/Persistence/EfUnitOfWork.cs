@@ -1,4 +1,4 @@
-﻿using SubscriptionBilling.Application.Abstractions.Persistence;
+using SubscriptionBilling.Application.Abstractions.Persistence;
 using SubscriptionBilling.Domain.Abstractions;
 
 namespace SubscriptionBilling.Infrastructure.Persistence;

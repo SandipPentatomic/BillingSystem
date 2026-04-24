@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SubscriptionBilling.Domain.Aggregates;
 using SubscriptionBilling.Domain.Enums;
 

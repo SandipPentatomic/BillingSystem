@@ -1,4 +1,4 @@
-﻿namespace SubscriptionBilling.Application.Abstractions.Clock;
+namespace SubscriptionBilling.Application.Abstractions.Clock;
 
 public interface IClock
 {

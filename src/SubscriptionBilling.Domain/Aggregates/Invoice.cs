@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using SubscriptionBilling.Domain.Abstractions;
 using SubscriptionBilling.Domain.Billing;
 using SubscriptionBilling.Domain.Enums;

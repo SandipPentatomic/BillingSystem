@@ -1,4 +1,4 @@
-﻿using SubscriptionBilling.Infrastructure.Configuration;
+using SubscriptionBilling.Infrastructure.Configuration;
 
 namespace SubscriptionBilling.Infrastructure.Tests.Configuration;
 

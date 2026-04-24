@@ -1,4 +1,4 @@
-﻿namespace SubscriptionBilling.Infrastructure.Configuration;
+namespace SubscriptionBilling.Infrastructure.Configuration;
 
 public sealed class BillingProcessingOptions
 {

@@ -1,4 +1,4 @@
-﻿using SubscriptionBilling.Domain.Billing;
+using SubscriptionBilling.Domain.Billing;
 using SubscriptionBilling.Domain.ValueObjects;
 
 namespace SubscriptionBilling.Domain.Tests.Billing;

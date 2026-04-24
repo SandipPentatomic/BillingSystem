@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using SubscriptionBilling.Api.Extensions;
 
 namespace SubscriptionBilling.Api.Tests.Extensions;

@@ -1,4 +1,4 @@
-﻿using SubscriptionBilling.Application.Abstractions.CQRS;
+using SubscriptionBilling.Application.Abstractions.CQRS;
 using SubscriptionBilling.Application.Abstractions.Persistence;
 
 namespace SubscriptionBilling.Application.Features.Invoices;

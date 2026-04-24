@@ -1,4 +1,4 @@
-﻿using SubscriptionBilling.Application.Abstractions.Clock;
+using SubscriptionBilling.Application.Abstractions.Clock;
 
 namespace SubscriptionBilling.Infrastructure.Services;
 
