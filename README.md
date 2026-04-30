@@ -27,10 +27,6 @@ This solution is implemented as a small modular monolith with:
 - [Running Locally](#running-locally)
 - [Testing the API](#testing-the-api)
 - [Automated Tests](#automated-tests)
-- [Key Technical Decisions](#key-technical-decisions)
-- [Trade-offs and Limitations](#trade-offs-and-limitations)
-- [Additional Documentation](#additional-documentation)
-- [Review Guide](#review-guide)
 
 ## Overview
 
@@ -380,54 +376,3 @@ dotnet test .\tests\SubscriptionBilling.Application.Tests\SubscriptionBilling.Ap
 dotnet test .\tests\SubscriptionBilling.Infrastructure.Tests\SubscriptionBilling.Infrastructure.Tests.csproj
 dotnet test .\tests\SubscriptionBilling.Api.Tests\SubscriptionBilling.Api.Tests.csproj
 ```
-
-## Key Technical Decisions
-
-### Why a Rich Domain Model
-
-The core business rules are encoded in aggregates and value objects rather than in controllers or EF entities used as passive records. This keeps the billing behavior easier to reason about and defend in a code review.
-
-### Why Explicit Handlers Instead of a Generic Mediator Package
-
-The application layer uses explicit command/query handlers without bringing in MediatR. This keeps the code small, transparent, and dependency-light while preserving the same architectural intent.
-
-### Why EF Core InMemory
-
-The task explicitly allows EF Core, and the in-memory provider keeps the sample easy to run with no database installation. The repository and unit-of-work boundaries make it straightforward to swap to a relational provider later.
-
-### Why Stable Outbox Discriminators
-
-Outbox rows use explicit string discriminators instead of assembly-qualified CLR type names. This makes the persisted event contract more stable across refactors.
-
-### Why Typed Invoice Status Filtering
-
-The invoice query API exposes a typed `InvoiceStatus` filter instead of a raw string so the contract is clearer in Swagger and safer inside the application and infrastructure layers.
-
-## Trade-offs and Limitations
-
-- Persistence is in-memory, so data is lost when the process stops
-- Idempotency coordination is process-local because the sample uses EF Core InMemory instead of a shared database
-- The payment gateway is simulated, not integrated with a real provider
-- The outbox processor currently logs and marks events as processed rather than publishing to a message broker
-- Authentication and authorization are intentionally out of scope
-
-## Additional Documentation
-
-Further DDD-oriented project notes are available in:
-
-- [docs/ddd-context-map.md](docs/ddd-context-map.md)
-- [docs/ubiquitous-language.md](docs/ubiquitous-language.md)
-
-## Review Guide
-
-If you want to review the code quickly, start here:
-
-- `src/SubscriptionBilling.Domain/Aggregates/Subscription.cs`
-- `src/SubscriptionBilling.Domain/Aggregates/Invoice.cs`
-- `src/SubscriptionBilling.Application/Features/Subscriptions/CreateSubscriptionCommandHandler.cs`
-- `src/SubscriptionBilling.Application/Features/Invoices/PayInvoiceCommandHandler.cs`
-- `src/SubscriptionBilling.Infrastructure/Persistence/EfUnitOfWork.cs`
-- `src/SubscriptionBilling.Infrastructure/Services/IdempotentCommandHandlerDecorator.cs`
-- `src/SubscriptionBilling.Api/Middleware/ExceptionHandlingMiddleware.cs`
-
-These files show the most important architectural decisions in the smallest number of places.
