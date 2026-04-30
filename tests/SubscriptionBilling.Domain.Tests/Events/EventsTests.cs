@@ -41,7 +41,7 @@ public sealed class EventsTests
             new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc)));
 
         invoice.ClearDomainEvents();
-        invoice.MarkAsPaid(new DateTime(2026, 4, 2, 0, 0, 0, DateTimeKind.Utc), PaymentMode.Check);
+        invoice.MarkAsPaid(new DateTime(2026, 4, 2, 0, 0, 0, DateTimeKind.Utc), PaymentMode.Check, "CHECK-REF-001");
 
         var domainEvent = Assert.Single(invoice.DomainEvents);
         var paymentReceived = Assert.IsType<PaymentReceivedDomainEvent>(domainEvent);
@@ -49,6 +49,7 @@ public sealed class EventsTests
         Assert.Equal(invoice.Id, paymentReceived.InvoiceId);
         Assert.Equal(invoice.SubscriptionId, paymentReceived.SubscriptionId);
         Assert.Equal(PaymentMode.Check, paymentReceived.PaymentMode);
+        Assert.Equal("CHECK-REF-001", paymentReceived.PaymentReference);
     }
 
     [Fact]
@@ -100,6 +101,7 @@ public sealed class EventsTests
         var amount = 100m;
         var currency = "USD";
         var paymentMode = PaymentMode.Online;
+        var paymentReference = "ONLINE-REF-001";
         var occurredOn = new DateTime(2026, 4, 2, 0, 0, 0, DateTimeKind.Utc);
 
         var @event = new PaymentReceivedDomainEvent(
@@ -109,6 +111,7 @@ public sealed class EventsTests
             amount,
             currency,
             paymentMode,
+            paymentReference,
             occurredOn);
 
         Assert.Equal(invoiceId, @event.InvoiceId);
@@ -117,6 +120,7 @@ public sealed class EventsTests
         Assert.Equal(amount, @event.Amount);
         Assert.Equal(currency, @event.Currency);
         Assert.Equal(paymentMode, @event.PaymentMode);
+        Assert.Equal(paymentReference, @event.PaymentReference);
         Assert.Equal(occurredOn, @event.OccurredOnUtc);
     }
 
@@ -158,10 +162,11 @@ public sealed class EventsTests
         var amount = 100m;
         var currency = "USD";
         var paymentMode = PaymentMode.Online;
+        var paymentReference = "ONLINE-REF-001";
         var occurredOn = new DateTime(2026, 4, 2, 0, 0, 0, DateTimeKind.Utc);
 
-        var event1 = new PaymentReceivedDomainEvent(invoiceId, subscriptionId, customerId, amount, currency, paymentMode, occurredOn);
-        var event2 = new PaymentReceivedDomainEvent(invoiceId, subscriptionId, customerId, amount, currency, paymentMode, occurredOn);
+        var event1 = new PaymentReceivedDomainEvent(invoiceId, subscriptionId, customerId, amount, currency, paymentMode, paymentReference, occurredOn);
+        var event2 = new PaymentReceivedDomainEvent(invoiceId, subscriptionId, customerId, amount, currency, paymentMode, paymentReference, occurredOn);
 
         Assert.Equal(event1, event2);
     }
@@ -206,9 +211,10 @@ public sealed class EventsTests
         var amount = 100m;
         var currency = "USD";
         var paymentMode = PaymentMode.Online;
+        var paymentReference = "ONLINE-REF-001";
         var occurredOn = new DateTime(2026, 4, 2, 0, 0, 0, DateTimeKind.Utc);
 
-        var @event = new PaymentReceivedDomainEvent(invoiceId, subscriptionId, customerId, amount, currency, paymentMode, occurredOn);
+        var @event = new PaymentReceivedDomainEvent(invoiceId, subscriptionId, customerId, amount, currency, paymentMode, paymentReference, occurredOn);
         var eventString = @event.ToString();
 
         Assert.NotNull(eventString);

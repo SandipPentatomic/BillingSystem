@@ -44,7 +44,7 @@ public sealed class BillingDbContext : DbContext
             entity.Property(subscription => subscription.Status)
                 .HasConversion(
                     value => value.ToString(),
-                    value => Enum.Parse<SubscriptionStatus>(value));
+                    value => EnumPersistence.ParseRequired<SubscriptionStatus>(value, nameof(Subscription.Status)));
             entity.Property(subscription => subscription.CurrentPeriodStartUtc).IsRequired();
             entity.Property(subscription => subscription.NextBillingDateUtc).IsRequired();
             entity.Property(subscription => subscription.InitialInvoiceGenerated).IsRequired();
@@ -61,7 +61,7 @@ public sealed class BillingDbContext : DbContext
             billingCycleBuilder.Property(value => value.Unit)
                 .HasConversion(
                     value => value.ToString(),
-                    value => Enum.Parse<BillingIntervalUnit>(value))
+                    value => EnumPersistence.ParseRequired<BillingIntervalUnit>(value, "Subscription.BillingCycle.Unit"))
                 .IsRequired();
         });
 
@@ -73,7 +73,7 @@ public sealed class BillingDbContext : DbContext
             entity.Property(invoice => invoice.Status)
                 .HasConversion(
                     value => value.ToString(),
-                    value => Enum.Parse<InvoiceStatus>(value));
+                    value => EnumPersistence.ParseRequired<InvoiceStatus>(value, nameof(Invoice.Status)));
             entity.Property(invoice => invoice.PeriodStartUtc).IsRequired();
             entity.Property(invoice => invoice.PeriodEndUtc).IsRequired();
             entity.Property(invoice => invoice.DueDateUtc).IsRequired();
@@ -82,7 +82,9 @@ public sealed class BillingDbContext : DbContext
             entity.Property(invoice => invoice.PaymentMode)
                 .HasConversion(
                     value => value.HasValue ? value.Value.ToString() : null,
-                    value => string.IsNullOrWhiteSpace(value) ? null : Enum.Parse<PaymentMode>(value));
+                    value => EnumPersistence.ParseNullable<PaymentMode>(value, nameof(Invoice.PaymentMode)));
+            entity.Property(invoice => invoice.ExternalPaymentReference)
+                .HasMaxLength(100);
             entity.Ignore(invoice => invoice.DomainEvents);
 
             var amountBuilder = entity.OwnsOne(invoice => invoice.Amount);

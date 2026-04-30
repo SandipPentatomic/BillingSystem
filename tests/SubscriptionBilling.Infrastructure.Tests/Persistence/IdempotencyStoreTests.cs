@@ -45,4 +45,37 @@ public sealed class IdempotencyStoreTests
         var processedCommand = Assert.Single(dbContext.ProcessedCommands);
         Assert.Equal("{\"value\":\"new\"}", processedCommand.ResponseJson);
     }
+
+    [Fact]
+    public async Task AcquireAsync_Serializes_Concurrent_Access_For_The_Same_Key()
+    {
+        await using var dbContext = TestDbContextFactory.Create();
+        var store = new IdempotencyStore(dbContext, new FakeClock(DateTime.UtcNow));
+        var executionOrder = new List<string>();
+        var firstLeaseAcquired = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        async Task EnterAsync(string label)
+        {
+            await using var lease = await store.AcquireAsync("shared-key", CancellationToken.None);
+            executionOrder.Add($"{label}-enter");
+
+            if (label == "first")
+            {
+                firstLeaseAcquired.SetResult();
+            }
+
+            await Task.Delay(25);
+            executionOrder.Add($"{label}-exit");
+        }
+
+        var firstTask = EnterAsync("first");
+        await firstLeaseAcquired.Task;
+        var secondTask = EnterAsync("second");
+
+        await Task.WhenAll(firstTask, secondTask);
+
+        Assert.Equal(
+            ["first-enter", "first-exit", "second-enter", "second-exit"],
+            executionOrder);
+    }
 }

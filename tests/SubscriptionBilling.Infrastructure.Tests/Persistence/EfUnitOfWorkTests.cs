@@ -28,7 +28,7 @@ public sealed class EfUnitOfWorkTests
         var outboxMessage = Assert.Single(dbContext.OutboxMessages);
         Assert.True(affectedRows > 0);
         Assert.Empty(subscription.DomainEvents);
-        Assert.Contains(nameof(SubscriptionActivatedDomainEvent), outboxMessage.Type);
+        Assert.Equal("subscription-activated", outboxMessage.Type);
         Assert.Contains(subscription.Id.ToString(), outboxMessage.Content, StringComparison.OrdinalIgnoreCase);
     }
 

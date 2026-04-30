@@ -1,0 +1,88 @@
+@baseUrl = http://localhost:5009
+@customerId = 11111111-1111-1111-1111-111111111111
+@subscriptionId = 22222222-2222-2222-2222-222222222222
+@invoiceId = 33333333-3333-3333-3333-333333333333
+
+### 1. Create customer
+POST {{baseUrl}}/api/customers
+Idempotency-Key: create-customer-001
+Content-Type: application/json
+
+{
+  "name": "Alice Johnson",
+  "email": "alice@example.com"
+}
+
+### 2. Create monthly subscription
+POST {{baseUrl}}/api/subscriptions
+Idempotency-Key: create-subscription-001
+Content-Type: application/json
+
+{
+  "customerId": "{{customerId}}",
+  "planName": "Pro Monthly",
+  "amount": 49.99,
+  "currency": "USD",
+  "billingInterval": 1,
+  "billingIntervalUnit": "Months"
+}
+
+### 3. Create fast-cycle subscription for scheduler testing
+POST {{baseUrl}}/api/subscriptions
+Idempotency-Key: create-fast-subscription-001
+Content-Type: application/json
+
+{
+  "customerId": "{{customerId}}",
+  "planName": "Quick Test Plan",
+  "amount": 5.00,
+  "currency": "USD",
+  "billingInterval": 1,
+  "billingIntervalUnit": "Minutes"
+}
+
+### 4. Query all invoices with paging
+GET {{baseUrl}}/api/invoices?pageNumber=1&pageSize=25
+
+### 5. Query pending invoices for a customer
+GET {{baseUrl}}/api/invoices?customerId={{customerId}}&status=Pending&pageNumber=1&pageSize=25
+
+### 6. Query invoices for a subscription
+GET {{baseUrl}}/api/invoices?subscriptionId={{subscriptionId}}&pageNumber=1&pageSize=25
+
+### 7. Pay invoice with cash
+POST {{baseUrl}}/api/invoices/{{invoiceId}}/pay
+Idempotency-Key: pay-invoice-cash-001
+Content-Type: application/json
+
+{
+  "paymentMode": "Cash"
+}
+
+### 8. Pay invoice with check
+POST {{baseUrl}}/api/invoices/{{invoiceId}}/pay
+Idempotency-Key: pay-invoice-check-001
+Content-Type: application/json
+
+{
+  "paymentMode": "Check"
+}
+
+### 9. Pay invoice with online payment
+POST {{baseUrl}}/api/invoices/{{invoiceId}}/pay
+Idempotency-Key: pay-invoice-online-001
+Content-Type: application/json
+
+{
+  "paymentMode": "Online"
+}
+
+### 10. Cancel subscription
+POST {{baseUrl}}/api/subscriptions/{{subscriptionId}}/cancel
+Idempotency-Key: cancel-subscription-001
+
+### 11. Run billing cycle manually
+POST {{baseUrl}}/api/billing/run
+
+### 12. Query paid invoices after billing run
+GET {{baseUrl}}/api/invoices?status=Paid&pageNumber=1&pageSize=25

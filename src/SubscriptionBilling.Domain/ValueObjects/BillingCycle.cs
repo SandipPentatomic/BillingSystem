@@ -53,6 +53,8 @@ public sealed class BillingCycle : ValueObject
 
     private static void ValidateRange(int interval, BillingIntervalUnit unit)
     {
+        // These caps are guard rails for this bounded context so billing schedules stay realistic
+        // and operationally manageable in the in-memory demo implementation.
         var isValid = unit switch
         {
             BillingIntervalUnit.Minutes => interval <= 60 * 24 * 7,

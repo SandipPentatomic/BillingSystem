@@ -1,6 +1,6 @@
 using SubscriptionBilling.Domain.Enums;
 
-namespace SubscriptionBilling.Application.Features.Invoices;
+namespace SubscriptionBilling.Application.ReadModels;
 
 public sealed record InvoiceListItem(
     Guid InvoiceId,
@@ -14,4 +14,5 @@ public sealed record InvoiceListItem(
     DateTime DueDateUtc,
     DateTime IssuedOnUtc,
     DateTime? PaidOnUtc,
-    PaymentMode? PaymentMode);
+    PaymentMode? PaymentMode,
+    string? PaymentReference);

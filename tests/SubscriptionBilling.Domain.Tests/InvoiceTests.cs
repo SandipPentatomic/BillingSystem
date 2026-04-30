@@ -21,11 +21,12 @@ public sealed class InvoiceTests
             new DateTime(2026, 5, 7, 0, 0, 0, DateTimeKind.Utc),
             new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc)));
 
-        invoice.MarkAsPaid(new DateTime(2026, 4, 2, 0, 0, 0, DateTimeKind.Utc), PaymentMode.Online);
+        invoice.MarkAsPaid(new DateTime(2026, 4, 2, 0, 0, 0, DateTimeKind.Utc), PaymentMode.Online, "ONLINE-REF-001");
 
         Assert.Equal(InvoiceStatus.Paid, invoice.Status);
         Assert.NotNull(invoice.PaidOnUtc);
         Assert.Equal(PaymentMode.Online, invoice.PaymentMode);
+        Assert.Equal("ONLINE-REF-001", invoice.ExternalPaymentReference);
     }
 
     [Fact]
@@ -41,10 +42,10 @@ public sealed class InvoiceTests
             new DateTime(2026, 5, 7, 0, 0, 0, DateTimeKind.Utc),
             new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc)));
 
-        invoice.MarkAsPaid(new DateTime(2026, 4, 2, 0, 0, 0, DateTimeKind.Utc), PaymentMode.Cash);
+        invoice.MarkAsPaid(new DateTime(2026, 4, 2, 0, 0, 0, DateTimeKind.Utc), PaymentMode.Cash, "CASH-REF-001");
 
         var exception = Assert.Throws<DomainException>(() =>
-            invoice.MarkAsPaid(new DateTime(2026, 4, 3, 0, 0, 0, DateTimeKind.Utc), PaymentMode.Check));
+            invoice.MarkAsPaid(new DateTime(2026, 4, 3, 0, 0, 0, DateTimeKind.Utc), PaymentMode.Check, "CHECK-REF-001"));
 
         Assert.Equal("Invoice cannot be paid twice.", exception.Message);
     }

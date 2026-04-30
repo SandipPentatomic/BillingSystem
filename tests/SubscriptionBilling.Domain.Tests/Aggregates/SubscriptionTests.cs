@@ -276,7 +276,7 @@ public sealed class SubscriptionTests
     }
 
     [Fact]
-    public void Cancelling_Already_Cancelled_Subscription_Is_Idempotent()
+    public void Cancelling_Already_Cancelled_Subscription_Throws_DomainException()
     {
         var subscription = Subscription.Create(
             Guid.NewGuid(),
@@ -289,9 +289,9 @@ public sealed class SubscriptionTests
         subscription.Cancel(cancelledOn);
 
         var secondCancelDate = cancelledOn.AddDays(1);
-        subscription.Cancel(secondCancelDate);
+        var exception = Assert.Throws<DomainException>(() => subscription.Cancel(secondCancelDate));
 
-        // Should still have the first cancellation date
+        Assert.Equal("Subscription is already cancelled.", exception.Message);
         Assert.Equal(cancelledOn, subscription.CancelledOnUtc);
         Assert.Equal(SubscriptionStatus.Cancelled, subscription.Status);
     }

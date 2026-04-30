@@ -134,7 +134,7 @@ public sealed class Subscription : AggregateRoot
     {
         if (Status == SubscriptionStatus.Cancelled)
         {
-            return;
+            throw new DomainException("Subscription is already cancelled.");
         }
 
         Status = SubscriptionStatus.Cancelled;

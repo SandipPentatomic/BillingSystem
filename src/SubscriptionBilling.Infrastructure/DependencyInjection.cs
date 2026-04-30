@@ -2,10 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SubscriptionBilling.Application.Abstractions.Clock;
-using SubscriptionBilling.Application.Abstractions.CQRS;
+using SubscriptionBilling.Application.Abstractions.Payments;
 using SubscriptionBilling.Application.Abstractions.Persistence;
 using SubscriptionBilling.Infrastructure.Background;
 using SubscriptionBilling.Infrastructure.Configuration;
+using SubscriptionBilling.Infrastructure.Payments;
 using SubscriptionBilling.Infrastructure.Persistence;
 using SubscriptionBilling.Infrastructure.Persistence.Repositories;
 using SubscriptionBilling.Infrastructure.Services;
@@ -22,10 +23,10 @@ public static class DependencyInjection
             options.UseInMemoryDatabase("SubscriptionBillingDb"));
 
         services.AddScoped<IClock, SystemClock>();
-        services.AddScoped<ICommandDispatcher, CommandDispatcher>();
-        services.AddScoped<IQueryDispatcher, QueryDispatcher>();
+        services.AddScoped<IPaymentGateway, SimulatedPaymentGateway>();
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<IIdempotencyStore, IdempotencyStore>();
+        services.AddScoped<IOutboxMessageProcessor, OutboxMessageProcessor>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
         services.AddScoped<IInvoiceRepository, InvoiceRepository>();

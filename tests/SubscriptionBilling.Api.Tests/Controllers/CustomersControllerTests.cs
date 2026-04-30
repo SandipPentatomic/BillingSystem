@@ -12,29 +12,33 @@ public sealed class CustomersControllerTests
     [Fact]
     public async Task CreateAsync_Dispatches_Command_And_Returns_Created_Result()
     {
-        var dispatcher = new FakeCommandDispatcher
+        var handler = new SpyCommandHandler<CreateCustomerCommand, CreateCustomerResult>
         {
             Response = new CreateCustomerResult(Guid.NewGuid(), "Alice", "alice@example.com")
         };
 
-        var controller = new CustomersController(dispatcher)
-        {
-            ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext()
-            }
-        };
-        controller.HttpContext.Request.Headers["Idempotency-Key"] = "customer-key";
+        var controller = new CustomersController(handler);
 
-        var result = await controller.CreateAsync(new CreateCustomerRequest("Alice", "alice@example.com"), CancellationToken.None);
+        var result = await controller.CreateAsync(new CreateCustomerRequest("Alice", "alice@example.com"), "customer-key", CancellationToken.None);
 
         var createdResult = Assert.IsType<CreatedResult>(result);
-        var command = Assert.IsType<CreateCustomerCommand>(dispatcher.LastCommand);
+        var command = Assert.IsType<CreateCustomerCommand>(handler.LastCommand);
 
         Assert.Equal("customer-key", command.IdempotencyKey);
         Assert.Equal("Alice", command.Name);
         Assert.Equal("alice@example.com", command.Email);
-        Assert.Equal($"/api/customers/{((CreateCustomerResult)dispatcher.Response).CustomerId}", createdResult.Location);
-        Assert.Same(dispatcher.Response, createdResult.Value);
+        Assert.Equal($"/api/customers/{handler.Response.CustomerId}", createdResult.Location);
+        Assert.Same(handler.Response, createdResult.Value);
+    }
+
+    [Fact]
+    public async Task CreateAsync_Throws_When_Idempotency_Header_Is_Missing()
+    {
+        var controller = new CustomersController(new SpyCommandHandler<CreateCustomerCommand, CreateCustomerResult>());
+
+        var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() =>
+            controller.CreateAsync(new CreateCustomerRequest("Alice", "alice@example.com"), string.Empty, CancellationToken.None));
+
+        Assert.Equal("The Idempotency-Key header is required for this operation.", exception.Message);
     }
 }

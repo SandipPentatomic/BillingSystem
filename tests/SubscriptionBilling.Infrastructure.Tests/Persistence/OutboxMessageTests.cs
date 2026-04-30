@@ -16,13 +16,15 @@ public sealed class OutboxMessageTests
             59m,
             "USD",
             SubscriptionBilling.Domain.Enums.PaymentMode.Online,
+            "ONLINE-REF-001",
             occurredOn);
 
         var message = OutboxMessage.FromDomainEvent(domainEvent);
 
         Assert.NotEqual(Guid.Empty, message.Id);
-        Assert.Contains(nameof(PaymentReceivedDomainEvent), message.Type);
+        Assert.Equal("payment-received", message.Type);
         Assert.Contains("\"amount\":59", message.Content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("ONLINE-REF-001", message.Content);
         Assert.Equal(occurredOn, message.OccurredOnUtc);
     }
 

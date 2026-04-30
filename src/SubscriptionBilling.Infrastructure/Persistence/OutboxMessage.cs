@@ -35,7 +35,7 @@ public sealed class OutboxMessage
     {
         return new OutboxMessage(
             Guid.NewGuid(),
-            domainEvent.GetType().AssemblyQualifiedName ?? domainEvent.GetType().FullName ?? domainEvent.GetType().Name,
+            OutboxEventTypeRegistry.GetDiscriminator(domainEvent),
             JsonSerializer.Serialize(domainEvent, domainEvent.GetType(), JsonDefaults.Options),
             domainEvent.OccurredOnUtc);
     }

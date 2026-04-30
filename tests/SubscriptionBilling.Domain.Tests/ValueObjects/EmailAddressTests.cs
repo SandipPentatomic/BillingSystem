@@ -31,6 +31,8 @@ public sealed class EmailAddressTests
     [InlineData("notanemail")]
     [InlineData("@example.com")]
     [InlineData("test@")]
+    [InlineData("a @b.com")]
+    [InlineData("test@example.com extra")]
     public void Creating_EmailAddress_With_Invalid_Email_Format_Throws_DomainException(string invalidEmail)
     {
         var exception = Assert.Throws<DomainException>(() => new EmailAddress(invalidEmail));

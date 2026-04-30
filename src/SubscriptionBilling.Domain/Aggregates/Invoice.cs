@@ -57,6 +57,8 @@ public sealed class Invoice : AggregateRoot
 
     public PaymentMode? PaymentMode { get; private set; }
 
+    public string? ExternalPaymentReference { get; private set; }
+
     public static Invoice Generate(InvoiceGenerationDraft draft)
     {
         var invoice = new Invoice(
@@ -80,16 +82,22 @@ public sealed class Invoice : AggregateRoot
         return invoice;
     }
 
-    public void MarkAsPaid(DateTime paidOnUtc, PaymentMode paymentMode)
+    public void MarkAsPaid(DateTime paidOnUtc, PaymentMode paymentMode, string paymentReference)
     {
         if (Status == InvoiceStatus.Paid)
         {
             throw new DomainException("Invoice cannot be paid twice.");
         }
 
+        if (string.IsNullOrWhiteSpace(paymentReference))
+        {
+            throw new DomainException("Payment reference is required.");
+        }
+
         Status = InvoiceStatus.Paid;
         PaidOnUtc = paidOnUtc;
         PaymentMode = paymentMode;
+        ExternalPaymentReference = paymentReference.Trim();
 
         Raise(new PaymentReceivedDomainEvent(
             Id,
@@ -98,6 +106,7 @@ public sealed class Invoice : AggregateRoot
             Amount.Amount,
             Amount.Currency,
             paymentMode,
+            ExternalPaymentReference,
             paidOnUtc));
     }
 }

@@ -1,7 +1,10 @@
 using SubscriptionBilling.Application.Abstractions.Clock;
+using SubscriptionBilling.Application.Abstractions.Payments;
 using SubscriptionBilling.Application.Abstractions.Persistence;
 using SubscriptionBilling.Application.Features.Invoices;
+using SubscriptionBilling.Application.ReadModels;
 using SubscriptionBilling.Domain.Aggregates;
+using SubscriptionBilling.Domain.Enums;
 
 namespace SubscriptionBilling.Application.Tests.Support;
 
@@ -23,6 +26,19 @@ internal sealed class SpyUnitOfWork : IUnitOfWork
     {
         SaveChangesCallCount++;
         return Task.FromResult(1);
+    }
+}
+
+internal sealed class FakePaymentGateway : IPaymentGateway
+{
+    public ChargePaymentRequest? LastRequest { get; private set; }
+
+    public ChargePaymentResult Result { get; set; } = new("PAYMENT-REFERENCE", DateTime.UtcNow);
+
+    public Task<ChargePaymentResult> ChargeAsync(ChargePaymentRequest request, CancellationToken cancellationToken)
+    {
+        LastRequest = request;
+        return Task.FromResult(Result);
     }
 }
 
@@ -129,21 +145,27 @@ internal sealed class FakeInvoiceRepository : IInvoiceRepository
 
 internal sealed class FakeInvoiceReadRepository : IInvoiceReadRepository
 {
-    public IReadOnlyCollection<InvoiceListItem> Result { get; set; } = [];
+    public PagedResult<InvoiceListItem> Result { get; set; } = new([], 1, 50, 0);
 
     public Guid? LastCustomerId { get; private set; }
     public Guid? LastSubscriptionId { get; private set; }
-    public string? LastStatus { get; private set; }
+    public InvoiceStatus? LastStatus { get; private set; }
+    public int LastPageNumber { get; private set; }
+    public int LastPageSize { get; private set; }
 
-    public Task<IReadOnlyCollection<InvoiceListItem>> ListAsync(
+    public Task<PagedResult<InvoiceListItem>> ListAsync(
         Guid? customerId,
         Guid? subscriptionId,
-        string? status,
+        InvoiceStatus? status,
+        int pageNumber,
+        int pageSize,
         CancellationToken cancellationToken)
     {
         LastCustomerId = customerId;
         LastSubscriptionId = subscriptionId;
         LastStatus = status;
+        LastPageNumber = pageNumber;
+        LastPageSize = pageSize;
         return Task.FromResult(Result);
     }
 }

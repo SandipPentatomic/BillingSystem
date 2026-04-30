@@ -10,4 +10,5 @@ public sealed record PaymentReceivedDomainEvent(
     decimal Amount,
     string Currency,
     PaymentMode PaymentMode,
+    string PaymentReference,
     DateTime OccurredOnUtc) : IDomainEvent;

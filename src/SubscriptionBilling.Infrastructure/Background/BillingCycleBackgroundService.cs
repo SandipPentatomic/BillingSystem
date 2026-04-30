@@ -36,8 +36,8 @@ public sealed class BillingCycleBackgroundService : BackgroundService
             try
             {
                 using var scope = _serviceScopeFactory.CreateScope();
-                var commandDispatcher = scope.ServiceProvider.GetRequiredService<ICommandDispatcher>();
-                var result = await commandDispatcher.SendAsync(new RunBillingCycleCommand(), stoppingToken);
+                var handler = scope.ServiceProvider.GetRequiredService<ICommandHandler<RunBillingCycleCommand, RunBillingCycleResult>>();
+                var result = await handler.HandleAsync(new RunBillingCycleCommand(), stoppingToken);
 
                 if (result.InvoicesGenerated > 0)
                 {

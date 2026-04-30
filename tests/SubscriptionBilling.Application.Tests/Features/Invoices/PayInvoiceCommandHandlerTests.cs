@@ -16,6 +16,7 @@ public sealed class PayInvoiceCommandHandlerTests
         var handler = new PayInvoiceCommandHandler(
             new FakeClock(DateTime.UtcNow),
             new FakeInvoiceRepository(),
+            new FakePaymentGateway(),
             new SpyUnitOfWork());
 
         var exception = await Assert.ThrowsAsync<NotFoundException>(() => handler.HandleAsync(
@@ -30,6 +31,10 @@ public sealed class PayInvoiceCommandHandlerTests
     {
         var now = new DateTime(2026, 4, 24, 13, 0, 0, DateTimeKind.Utc);
         var invoiceRepository = new FakeInvoiceRepository();
+        var paymentGateway = new FakePaymentGateway
+        {
+            Result = new("CHECK-REF-001", now)
+        };
         var unitOfWork = new SpyUnitOfWork();
         var invoice = Invoice.Generate(new InvoiceGenerationDraft(
             Guid.NewGuid(),
@@ -42,7 +47,7 @@ public sealed class PayInvoiceCommandHandlerTests
             now.AddDays(-1)));
         invoiceRepository.Seed(invoice);
 
-        var handler = new PayInvoiceCommandHandler(new FakeClock(now), invoiceRepository, unitOfWork);
+        var handler = new PayInvoiceCommandHandler(new FakeClock(now), invoiceRepository, paymentGateway, unitOfWork);
 
         var result = await handler.HandleAsync(
             new PayInvoiceCommand(invoice.Id, PaymentMode.Check, "invoice-key"),
@@ -52,7 +57,12 @@ public sealed class PayInvoiceCommandHandlerTests
         Assert.Equal("Paid", result.Status);
         Assert.Equal(now, result.PaidOnUtc);
         Assert.Equal(PaymentMode.Check, result.PaymentMode);
+        Assert.Equal("CHECK-REF-001", result.PaymentReference);
         Assert.Equal(PaymentMode.Check, invoice.PaymentMode);
+        Assert.Equal("CHECK-REF-001", invoice.ExternalPaymentReference);
+        Assert.NotNull(paymentGateway.LastRequest);
+        Assert.Equal(invoice.Id, paymentGateway.LastRequest!.InvoiceId);
+        Assert.Equal(invoice.Amount.Amount, paymentGateway.LastRequest.Amount);
         Assert.Equal(1, unitOfWork.SaveChangesCallCount);
     }
 }

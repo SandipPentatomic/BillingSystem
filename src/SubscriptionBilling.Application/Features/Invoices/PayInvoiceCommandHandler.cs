@@ -1,5 +1,6 @@
 using SubscriptionBilling.Application.Abstractions.Clock;
 using SubscriptionBilling.Application.Abstractions.CQRS;
+using SubscriptionBilling.Application.Abstractions.Payments;
 using SubscriptionBilling.Application.Abstractions.Persistence;
 using SubscriptionBilling.Application.Exceptions;
 
@@ -9,15 +10,18 @@ public sealed class PayInvoiceCommandHandler : ICommandHandler<PayInvoiceCommand
 {
     private readonly IClock _clock;
     private readonly IInvoiceRepository _invoiceRepository;
+    private readonly IPaymentGateway _paymentGateway;
     private readonly IUnitOfWork _unitOfWork;
 
     public PayInvoiceCommandHandler(
         IClock clock,
         IInvoiceRepository invoiceRepository,
+        IPaymentGateway paymentGateway,
         IUnitOfWork unitOfWork)
     {
         _clock = clock;
         _invoiceRepository = invoiceRepository;
+        _paymentGateway = paymentGateway;
         _unitOfWork = unitOfWork;
     }
 
@@ -30,9 +34,23 @@ public sealed class PayInvoiceCommandHandler : ICommandHandler<PayInvoiceCommand
             throw new NotFoundException($"Invoice '{command.InvoiceId}' was not found.");
         }
 
-        invoice.MarkAsPaid(_clock.UtcNow, command.PaymentMode);
+        var paymentResult = await _paymentGateway.ChargeAsync(
+            new ChargePaymentRequest(
+                invoice.Id,
+                invoice.CustomerId,
+                invoice.Amount.Amount,
+                invoice.Amount.Currency,
+                command.PaymentMode),
+            cancellationToken);
+
+        invoice.MarkAsPaid(paymentResult.ProcessedOnUtc, command.PaymentMode, paymentResult.PaymentReference);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new PayInvoiceResult(invoice.Id, invoice.Status.ToString(), invoice.PaidOnUtc!.Value, invoice.PaymentMode!.Value);
+        return new PayInvoiceResult(
+            invoice.Id,
+            invoice.Status.ToString(),
+            invoice.PaidOnUtc!.Value,
+            invoice.PaymentMode!.Value,
+            invoice.ExternalPaymentReference!);
     }
 }

@@ -11,18 +11,18 @@ namespace SubscriptionBilling.Api.Controllers;
 [Produces("application/json")]
 public sealed class BillingController : ControllerBase
 {
-    private readonly ICommandDispatcher _commandDispatcher;
+    private readonly ICommandHandler<RunBillingCycleCommand, RunBillingCycleResult> _runBillingCycleHandler;
 
-    public BillingController(ICommandDispatcher commandDispatcher)
+    public BillingController(ICommandHandler<RunBillingCycleCommand, RunBillingCycleResult> runBillingCycleHandler)
     {
-        _commandDispatcher = commandDispatcher;
+        _runBillingCycleHandler = runBillingCycleHandler;
     }
 
     [HttpPost("run")]
     [ProducesResponseType(typeof(RunBillingCycleResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> RunAsync(CancellationToken cancellationToken)
     {
-        var result = await _commandDispatcher.SendAsync(new RunBillingCycleCommand(), cancellationToken);
+        var result = await _runBillingCycleHandler.HandleAsync(new RunBillingCycleCommand(), cancellationToken);
         return Ok(result);
     }
 }

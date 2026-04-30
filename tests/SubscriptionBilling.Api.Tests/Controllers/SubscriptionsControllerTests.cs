@@ -13,7 +13,8 @@ public sealed class SubscriptionsControllerTests
     [Fact]
     public async Task CreateAsync_Dispatches_Command_And_Returns_Created_Result()
     {
-        var dispatcher = new FakeCommandDispatcher();
+        var createHandler = new SpyCommandHandler<CreateSubscriptionCommand, CreateSubscriptionResult>();
+        var cancelHandler = new SpyCommandHandler<CancelSubscriptionCommand, CancelSubscriptionResult>();
         var customerId = Guid.NewGuid();
         var response = new CreateSubscriptionResult(
             Guid.NewGuid(),
@@ -27,23 +28,16 @@ public sealed class SubscriptionsControllerTests
             "USD",
             15,
             BillingIntervalUnit.Minutes);
-        dispatcher.Response = response;
+        createHandler.Response = response;
 
-        var controller = new SubscriptionsController(dispatcher)
-        {
-            ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext()
-            }
-        };
-        controller.HttpContext.Request.Headers["Idempotency-Key"] = "subscription-key";
+        var controller = new SubscriptionsController(createHandler, cancelHandler);
 
         var request = new CreateSubscriptionRequest(customerId, "Growth", 59m, "USD", 15, BillingIntervalUnit.Minutes);
 
-        var result = await controller.CreateAsync(request, CancellationToken.None);
+        var result = await controller.CreateAsync(request, "subscription-key", CancellationToken.None);
 
         var createdResult = Assert.IsType<CreatedResult>(result);
-        var command = Assert.IsType<CreateSubscriptionCommand>(dispatcher.LastCommand);
+        var command = Assert.IsType<CreateSubscriptionCommand>(createHandler.LastCommand);
 
         Assert.Equal(customerId, command.CustomerId);
         Assert.Equal("subscription-key", command.IdempotencyKey);
@@ -55,27 +49,34 @@ public sealed class SubscriptionsControllerTests
     [Fact]
     public async Task CancelAsync_Dispatches_Command_And_Returns_Ok_Result()
     {
-        var dispatcher = new FakeCommandDispatcher();
+        var createHandler = new SpyCommandHandler<CreateSubscriptionCommand, CreateSubscriptionResult>();
+        var cancelHandler = new SpyCommandHandler<CancelSubscriptionCommand, CancelSubscriptionResult>();
         var subscriptionId = Guid.NewGuid();
         var response = new CancelSubscriptionResult(subscriptionId, "Cancelled", DateTime.UtcNow);
-        dispatcher.Response = response;
+        cancelHandler.Response = response;
 
-        var controller = new SubscriptionsController(dispatcher)
-        {
-            ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext()
-            }
-        };
-        controller.HttpContext.Request.Headers["Idempotency-Key"] = "cancel-key";
+        var controller = new SubscriptionsController(createHandler, cancelHandler);
 
-        var result = await controller.CancelAsync(subscriptionId, CancellationToken.None);
+        var result = await controller.CancelAsync(subscriptionId, "cancel-key", CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var command = Assert.IsType<CancelSubscriptionCommand>(dispatcher.LastCommand);
+        var command = Assert.IsType<CancelSubscriptionCommand>(cancelHandler.LastCommand);
 
         Assert.Equal(subscriptionId, command.SubscriptionId);
         Assert.Equal("cancel-key", command.IdempotencyKey);
         Assert.Same(response, okResult.Value);
+    }
+
+    [Fact]
+    public async Task CancelAsync_Throws_When_Idempotency_Header_Is_Missing()
+    {
+        var controller = new SubscriptionsController(
+            new SpyCommandHandler<CreateSubscriptionCommand, CreateSubscriptionResult>(),
+            new SpyCommandHandler<CancelSubscriptionCommand, CancelSubscriptionResult>());
+
+        var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() =>
+            controller.CancelAsync(Guid.NewGuid(), string.Empty, CancellationToken.None));
+
+        Assert.Equal("The Idempotency-Key header is required for this operation.", exception.Message);
     }
 }

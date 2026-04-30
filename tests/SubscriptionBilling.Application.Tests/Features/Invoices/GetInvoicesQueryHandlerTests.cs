@@ -1,4 +1,5 @@
 using SubscriptionBilling.Application.Features.Invoices;
+using SubscriptionBilling.Application.ReadModels;
 using SubscriptionBilling.Application.Tests.Support;
 using SubscriptionBilling.Domain.Enums;
 
@@ -25,21 +26,26 @@ public sealed class GetInvoicesQueryHandlerTests
                 DateTime.UtcNow.AddDays(6),
                 DateTime.UtcNow.AddDays(-1),
                 DateTime.UtcNow,
-                PaymentMode.Cash)
+                PaymentMode.Cash,
+                "CASH-REF")
         };
 
         var repository = new FakeInvoiceReadRepository
         {
-            Result = invoices
+            Result = new PagedResult<InvoiceListItem>(invoices, 2, 10, 25)
         };
 
         var handler = new GetInvoicesQueryHandler(repository);
 
-        var result = await handler.HandleAsync(new GetInvoicesQuery(customerId, subscriptionId, "Paid"), CancellationToken.None);
+        var result = await handler.HandleAsync(
+            new GetInvoicesQuery(customerId, subscriptionId, InvoiceStatus.Paid, 2, 10),
+            CancellationToken.None);
 
-        Assert.Same(invoices, result);
+        Assert.Same(invoices, result.Items);
         Assert.Equal(customerId, repository.LastCustomerId);
         Assert.Equal(subscriptionId, repository.LastSubscriptionId);
-        Assert.Equal("Paid", repository.LastStatus);
+        Assert.Equal(InvoiceStatus.Paid, repository.LastStatus);
+        Assert.Equal(2, repository.LastPageNumber);
+        Assert.Equal(10, repository.LastPageSize);
     }
 }

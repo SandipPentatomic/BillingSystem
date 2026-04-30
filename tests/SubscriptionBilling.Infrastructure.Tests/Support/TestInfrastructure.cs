@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using SubscriptionBilling.Application.Abstractions.Clock;
 using SubscriptionBilling.Application.Abstractions.CQRS;
+using SubscriptionBilling.Application.Abstractions.Persistence;
 using SubscriptionBilling.Infrastructure.Persistence;
+using System.Collections.Concurrent;
 
 namespace SubscriptionBilling.Infrastructure.Tests.Support;
 
@@ -45,6 +47,18 @@ public sealed class TestIdempotentCommandHandler : ICommandHandler<TestIdempoten
     }
 }
 
+public sealed class SlowTestIdempotentCommandHandler : ICommandHandler<TestIdempotentCommand, TestResponse>
+{
+    public int CallCount { get; private set; }
+
+    public async Task<TestResponse> HandleAsync(TestIdempotentCommand command, CancellationToken cancellationToken)
+    {
+        CallCount++;
+        await Task.Delay(50, cancellationToken);
+        return new TestResponse($"handled:{command.Value}");
+    }
+}
+
 public sealed class TestQueryHandler : IQueryHandler<TestQuery, TestResponse>
 {
     public int CallCount { get; private set; }
@@ -56,12 +70,22 @@ public sealed class TestQueryHandler : IQueryHandler<TestQuery, TestResponse>
     }
 }
 
-public sealed class FakeIdempotencyStore : SubscriptionBilling.Application.Abstractions.Persistence.IIdempotencyStore
+public sealed class FakeIdempotencyStore : IIdempotencyStore
 {
     private readonly Dictionary<string, string> _responses = [];
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new(StringComparer.Ordinal);
 
+    public int AcquireCallCount { get; private set; }
     public int GetResponseCallCount { get; private set; }
     public int SaveResponseCallCount { get; private set; }
+
+    public async Task<IAsyncDisposable> AcquireAsync(string idempotencyKey, CancellationToken cancellationToken)
+    {
+        AcquireCallCount++;
+        var semaphore = _locks.GetOrAdd(idempotencyKey, _ => new SemaphoreSlim(1, 1));
+        await semaphore.WaitAsync(cancellationToken);
+        return new FakeLease(semaphore);
+    }
 
     public Task<string?> GetResponseAsync(string idempotencyKey, CancellationToken cancellationToken)
     {
@@ -80,6 +104,22 @@ public sealed class FakeIdempotencyStore : SubscriptionBilling.Application.Abstr
     public void Seed(string idempotencyKey, string responseJson)
     {
         _responses[idempotencyKey] = responseJson;
+    }
+
+    private sealed class FakeLease : IAsyncDisposable
+    {
+        private readonly SemaphoreSlim _semaphore;
+
+        public FakeLease(SemaphoreSlim semaphore)
+        {
+            _semaphore = semaphore;
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            _semaphore.Release();
+            return ValueTask.CompletedTask;
+        }
     }
 }
 

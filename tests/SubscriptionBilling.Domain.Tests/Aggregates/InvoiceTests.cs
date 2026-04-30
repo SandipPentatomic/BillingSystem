@@ -96,6 +96,7 @@ public sealed class InvoiceTests
 
         Assert.Null(invoice.PaidOnUtc);
         Assert.Null(invoice.PaymentMode);
+        Assert.Null(invoice.ExternalPaymentReference);
     }
 
     [Theory]
@@ -118,11 +119,13 @@ public sealed class InvoiceTests
         invoice.ClearDomainEvents();
 
         var paidOn = new DateTime(2026, 4, 2, 0, 0, 0, DateTimeKind.Utc);
-        invoice.MarkAsPaid(paidOn, paymentMode);
+        var paymentReference = $"REF-{paymentMode}";
+        invoice.MarkAsPaid(paidOn, paymentMode, paymentReference);
 
         Assert.Equal(InvoiceStatus.Paid, invoice.Status);
         Assert.Equal(paidOn, invoice.PaidOnUtc);
         Assert.Equal(paymentMode, invoice.PaymentMode);
+        Assert.Equal(paymentReference, invoice.ExternalPaymentReference);
     }
 
     [Fact]
@@ -142,7 +145,7 @@ public sealed class InvoiceTests
         invoice.ClearDomainEvents();
 
         var paidOn = new DateTime(2026, 4, 2, 0, 0, 0, DateTimeKind.Utc);
-        invoice.MarkAsPaid(paidOn, PaymentMode.Check);
+        invoice.MarkAsPaid(paidOn, PaymentMode.Check, "CHECK-REF-001");
 
         var domainEvent = Assert.Single(invoice.DomainEvents);
         var paymentEvent = Assert.IsType<PaymentReceivedDomainEvent>(domainEvent);
@@ -153,6 +156,7 @@ public sealed class InvoiceTests
         Assert.Equal(invoice.Amount.Amount, paymentEvent.Amount);
         Assert.Equal(invoice.Amount.Currency, paymentEvent.Currency);
         Assert.Equal(PaymentMode.Check, paymentEvent.PaymentMode);
+        Assert.Equal("CHECK-REF-001", paymentEvent.PaymentReference);
         Assert.Equal(paidOn, paymentEvent.OccurredOnUtc);
     }
 
@@ -172,12 +176,32 @@ public sealed class InvoiceTests
         var invoice = Invoice.Generate(draft);
 
         var paidOn = new DateTime(2026, 4, 2, 0, 0, 0, DateTimeKind.Utc);
-        invoice.MarkAsPaid(paidOn, PaymentMode.Check);
+        invoice.MarkAsPaid(paidOn, PaymentMode.Check, "CHECK-REF-001");
 
         var secondPaymentDate = new DateTime(2026, 4, 3, 0, 0, 0, DateTimeKind.Utc);
-        var exception = Assert.Throws<DomainException>(() => invoice.MarkAsPaid(secondPaymentDate, PaymentMode.Online));
+        var exception = Assert.Throws<DomainException>(() => invoice.MarkAsPaid(secondPaymentDate, PaymentMode.Online, "ONLINE-REF-002"));
 
         Assert.Equal("Invoice cannot be paid twice.", exception.Message);
+    }
+
+    [Fact]
+    public void Marking_Invoice_As_Paid_Without_PaymentReference_Throws_DomainException()
+    {
+        var draft = new InvoiceGenerationDraft(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            new Money(100m, "USD"),
+            new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 4, 30, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 5, 7, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc));
+
+        var invoice = Invoice.Generate(draft);
+
+        var exception = Assert.Throws<DomainException>(() => invoice.MarkAsPaid(DateTime.UtcNow, PaymentMode.Cash, " "));
+
+        Assert.Equal("Payment reference is required.", exception.Message);
     }
 
     [Fact]

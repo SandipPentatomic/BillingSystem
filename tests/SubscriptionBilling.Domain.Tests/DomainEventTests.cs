@@ -41,7 +41,7 @@ public sealed class DomainEventTests
             new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc)));
 
         invoice.ClearDomainEvents();
-        invoice.MarkAsPaid(new DateTime(2026, 4, 2, 0, 0, 0, DateTimeKind.Utc), PaymentMode.Check);
+        invoice.MarkAsPaid(new DateTime(2026, 4, 2, 0, 0, 0, DateTimeKind.Utc), PaymentMode.Check, "CHECK-REF-001");
 
         var domainEvent = Assert.Single(invoice.DomainEvents);
         var paymentReceived = Assert.IsType<PaymentReceivedDomainEvent>(domainEvent);
@@ -49,5 +49,6 @@ public sealed class DomainEventTests
         Assert.Equal(invoice.Id, paymentReceived.InvoiceId);
         Assert.Equal(invoice.SubscriptionId, paymentReceived.SubscriptionId);
         Assert.Equal(PaymentMode.Check, paymentReceived.PaymentMode);
+        Assert.Equal("CHECK-REF-001", paymentReceived.PaymentReference);
     }
 }

@@ -1,12 +1,15 @@
-using SubscriptionBilling.Application.Features.Invoices;
+using SubscriptionBilling.Domain.Enums;
+using SubscriptionBilling.Application.ReadModels;
 
 namespace SubscriptionBilling.Application.Abstractions.Persistence;
 
 public interface IInvoiceReadRepository
 {
-    Task<IReadOnlyCollection<InvoiceListItem>> ListAsync(
+    Task<PagedResult<InvoiceListItem>> ListAsync(
         Guid? customerId,
         Guid? subscriptionId,
-        string? status,
+        InvoiceStatus? status,
+        int pageNumber,
+        int pageSize,
         CancellationToken cancellationToken);
 }

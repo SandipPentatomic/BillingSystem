@@ -1,11 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SubscriptionBilling.Infrastructure.Configuration;
-using SubscriptionBilling.Infrastructure.Persistence;
+using SubscriptionBilling.Infrastructure.Services;
 
 namespace SubscriptionBilling.Infrastructure.Background;
 
@@ -36,35 +35,8 @@ public sealed class OutboxBackgroundService : BackgroundService
             try
             {
                 using var scope = _serviceScopeFactory.CreateScope();
-                var dbContext = scope.ServiceProvider.GetRequiredService<BillingDbContext>();
-
-                var pendingMessages = await dbContext.OutboxMessages
-                    .Where(message => message.ProcessedOnUtc == null)
-                    .OrderBy(message => message.OccurredOnUtc)
-                    .Take(50)
-                    .ToListAsync(stoppingToken);
-
-                if (pendingMessages.Count == 0)
-                {
-                    continue;
-                }
-
-                foreach (var message in pendingMessages)
-                {
-                    try
-                    {
-                        var eventType = Type.GetType(message.Type, throwOnError: false);
-                        _logger.LogInformation("Outbox dispatching domain event {EventType}", eventType?.Name ?? message.Type);
-                        message.MarkProcessed(DateTime.UtcNow);
-                    }
-                    catch (Exception exception)
-                    {
-                        message.MarkFailed(exception.Message);
-                        _logger.LogError(exception, "Failed to process outbox message {OutboxMessageId}", message.Id);
-                    }
-                }
-
-                await dbContext.SaveChangesAsync(stoppingToken);
+                var processor = scope.ServiceProvider.GetRequiredService<IOutboxMessageProcessor>();
+                await processor.ProcessPendingAsync(stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {

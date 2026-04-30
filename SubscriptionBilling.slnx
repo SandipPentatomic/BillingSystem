@@ -7,6 +7,8 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SubscriptionBilling.Api.Tests/SubscriptionBilling.Api.Tests.csproj" />
+    <Project Path="tests/SubscriptionBilling.Application.Tests/SubscriptionBilling.Application.Tests.csproj" />
     <Project Path="tests/SubscriptionBilling.Domain.Tests/SubscriptionBilling.Domain.Tests.csproj" />
+    <Project Path="tests/SubscriptionBilling.Infrastructure.Tests/SubscriptionBilling.Infrastructure.Tests.csproj" />
   </Folder>
 </Solution>

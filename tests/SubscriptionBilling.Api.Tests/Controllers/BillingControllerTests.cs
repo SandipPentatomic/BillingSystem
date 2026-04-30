@@ -10,15 +10,15 @@ public sealed class BillingControllerTests
     [Fact]
     public async Task RunAsync_Dispatches_Command_And_Returns_Ok_Result()
     {
-        var dispatcher = new FakeCommandDispatcher();
+        var handler = new SpyCommandHandler<RunBillingCycleCommand, RunBillingCycleResult>();
         var response = new RunBillingCycleResult(3, 4, DateTime.UtcNow);
-        dispatcher.Response = response;
-        var controller = new BillingController(dispatcher);
+        handler.Response = response;
+        var controller = new BillingController(handler);
 
         var result = await controller.RunAsync(CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        Assert.IsType<RunBillingCycleCommand>(dispatcher.LastCommand);
+        Assert.IsType<RunBillingCycleCommand>(handler.LastCommand);
         Assert.Same(response, okResult.Value);
     }
 }

@@ -2,12 +2,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SubscriptionBilling.Application.Abstractions.Clock;
-using SubscriptionBilling.Application.Abstractions.CQRS;
+using SubscriptionBilling.Application.Abstractions.Payments;
 using SubscriptionBilling.Application.Abstractions.Persistence;
 using SubscriptionBilling.Infrastructure;
 using SubscriptionBilling.Infrastructure.Background;
 using SubscriptionBilling.Infrastructure.Configuration;
 using SubscriptionBilling.Infrastructure.Persistence;
+using SubscriptionBilling.Infrastructure.Services;
 
 namespace SubscriptionBilling.Infrastructure.Tests;
 
@@ -26,16 +27,17 @@ public sealed class DependencyInjectionTests
 
         var services = new ServiceCollection();
 
+        services.AddLogging();
         services.AddInfrastructure(configuration);
 
         using var serviceProvider = services.BuildServiceProvider();
 
         Assert.NotNull(serviceProvider.GetService<BillingDbContext>());
         Assert.NotNull(serviceProvider.GetService<IClock>());
-        Assert.NotNull(serviceProvider.GetService<ICommandDispatcher>());
-        Assert.NotNull(serviceProvider.GetService<IQueryDispatcher>());
+        Assert.NotNull(serviceProvider.GetService<IPaymentGateway>());
         Assert.NotNull(serviceProvider.GetService<IUnitOfWork>());
         Assert.NotNull(serviceProvider.GetService<IIdempotencyStore>());
+        Assert.NotNull(serviceProvider.GetService<IOutboxMessageProcessor>());
         Assert.NotNull(serviceProvider.GetService<ICustomerRepository>());
         Assert.NotNull(serviceProvider.GetService<ISubscriptionRepository>());
         Assert.NotNull(serviceProvider.GetService<IInvoiceRepository>());

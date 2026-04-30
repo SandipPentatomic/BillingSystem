@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SubscriptionBilling.Application.Abstractions.Persistence;
-using SubscriptionBilling.Application.Features.Invoices;
+using SubscriptionBilling.Application.ReadModels;
 using SubscriptionBilling.Domain.Enums;
 
 namespace SubscriptionBilling.Infrastructure.Persistence.Repositories;
@@ -14,12 +14,24 @@ public sealed class InvoiceReadRepository : IInvoiceReadRepository
         _dbContext = dbContext;
     }
 
-    public async Task<IReadOnlyCollection<InvoiceListItem>> ListAsync(
+    public async Task<PagedResult<InvoiceListItem>> ListAsync(
         Guid? customerId,
         Guid? subscriptionId,
-        string? status,
+        InvoiceStatus? status,
+        int pageNumber,
+        int pageSize,
         CancellationToken cancellationToken)
     {
+        if (pageNumber <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(pageNumber), "Page number must be greater than zero.");
+        }
+
+        if (pageSize <= 0 || pageSize > 200)
+        {
+            throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be between 1 and 200.");
+        }
+
         var query = _dbContext.Invoices.AsNoTracking().AsQueryable();
 
         if (customerId.HasValue)
@@ -32,18 +44,16 @@ public sealed class InvoiceReadRepository : IInvoiceReadRepository
             query = query.Where(invoice => invoice.SubscriptionId == subscriptionId.Value);
         }
 
-        if (!string.IsNullOrWhiteSpace(status))
+        if (status.HasValue)
         {
-            if (!Enum.TryParse<InvoiceStatus>(status, true, out var parsedStatus))
-            {
-                return [];
-            }
-
-            query = query.Where(invoice => invoice.Status == parsedStatus);
+            query = query.Where(invoice => invoice.Status == status.Value);
         }
 
-        return await query
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
             .OrderByDescending(invoice => invoice.IssuedOnUtc)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .Select(invoice => new InvoiceListItem(
                 invoice.Id,
                 invoice.CustomerId,
@@ -56,7 +66,10 @@ public sealed class InvoiceReadRepository : IInvoiceReadRepository
                 invoice.DueDateUtc,
                 invoice.IssuedOnUtc,
                 invoice.PaidOnUtc,
-                invoice.PaymentMode))
+                invoice.PaymentMode,
+                invoice.ExternalPaymentReference))
             .ToListAsync(cancellationToken);
+
+        return new PagedResult<InvoiceListItem>(items, pageNumber, pageSize, totalCount);
     }
 }
